@@ -1,7 +1,6 @@
 (ns personnummer.core
   (:require [clojure.string :refer (join split)]
-            [clj-time.core :as t]
-            [clj-time.format :as tf]
+            [java-time :as t]
             [personnummer.gender :as gender]))
 
 (defrecord Personnummer
@@ -16,11 +15,13 @@
   (if-some [[_ century year month day divider serial control]
             (re-matches pnr-re input)]
     (->Personnummer
-     (t/date-time (+ (* (read-string (or century "20")) 100) (read-string year)) (read-string month) (read-string day) 0 0 0 0)
+     (t/local-date (+ (* (Integer/parseInt (or century "19")) 100) (Integer/parseInt year))
+                   (Integer/parseInt month)
+                   (Integer/parseInt day))
      (read-string serial)
      (read-string control)
      divider
-     (> (read-string day) 60))
+     (> (Integer/parseInt day) 60))
     (Personnummer. nil 0 0 "" false)))
 
 (defn luhn-sum [digits]
@@ -35,7 +36,7 @@
 
 (defn format-for-luhn [pnr]
   (format "%s%03d"
-          (tf/unparse (tf/formatter "yyMMdd") (:date pnr))
+          (t/format "yyMMdd" (:date pnr))
           (:serial pnr)))
 
 (defn luhn [digits]
@@ -66,3 +67,17 @@
 
 (defn is-male [pnr]
   (not (is-female pnr)))
+
+(defn age [pnr]
+  (let [now t/local-date
+        y (t/as (:date pnr) :year) y-now (t/as (now) :year)
+        m (t/as (:date pnr) :month-of-year) m-now (t/as (now) :month-of-year)
+        d (t/as (:date pnr) :day-of-month) d-now (t/as (now) :day-of-month)]
+    (cond
+      (> m-now m) (- y-now y)
+      (and
+       (= m-now m)
+       (>= d-now d))
+      (- y-now y)
+      :else
+      (- (- y-now y) 1))))
