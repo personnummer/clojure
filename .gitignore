@@ -1,4 +1,6 @@
 .calva/
+.clj-kondo/
+.lsp/
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,vim,clojure
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,vim,clojure
