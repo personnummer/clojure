@@ -14,14 +14,20 @@
   [input]
   (if-some [[_ century year month day divider serial control]
             (re-matches pnr-re input)]
-    (->Personnummer
-     (t/local-date (+ (* (Integer/parseInt (or century "19")) 100) (Integer/parseInt year))
-                   (Integer/parseInt month)
-                   (Integer/parseInt day))
-     (read-string serial)
-     (read-string control)
-     divider
-     (> (Integer/parseInt day) 60))
+    (let [default-century "19"
+          day-i (Integer/parseInt day)
+          day-m (mod day-i 60)]
+      (->Personnummer
+       (try
+         (t/local-date
+          (+ (* (Integer/parseInt (or century default-century)) 100) (Integer/parseInt year))
+          (Integer/parseInt month)
+          day-m)
+         (catch Exception _ nil))
+       (Integer/parseInt serial)
+       (Integer/parseInt control)
+       divider
+       (> day-i 60)))
     (Personnummer. nil 0 0 "" false)))
 
 (defn luhn-sum [digits]
