@@ -77,4 +77,17 @@
     twenty-year-old-today 20
     twenty-year-old-tomorrow 19))
 
+(deftest format-pnr
+  (are
+   [input long expected]
+   (= expected (SUT/format (SUT/personnummer input) long))
+    "9001010017" false "900101-0017"
+    "9001010017" true "19900101-0017"
+    "900101-0017" false "900101-0017"
+    "900101-0017" true "19900101-0017"
+    "19900101-0017" false "900101-0017"
+    "19900101-0017" true "19900101-0017"
+    "19900101+0017" false "900101+0017"
+    "19900101+0017" true "19900101+0017"))
+
 (run-tests)

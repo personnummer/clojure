@@ -1,10 +1,11 @@
 (ns personnummer.core
+  (:refer-clojure :exclude [format])
   (:require [clojure.string :refer (join split)]
             [java-time :as t]
             [personnummer.gender :as gender]))
 
 (defrecord Personnummer
-           [date serial control separator coordination])
+           [date serial control divider coordination])
 
 (def pnr-re
   #"^([0-9]{2})?([0-9]{2})([0-9]{2})([0-9]{2})([-+])?([0-9]{3})([0-9])?$")
@@ -26,11 +27,21 @@
          (catch Exception _ nil))
        (Integer/parseInt serial)
        (Integer/parseInt control)
-       divider
+       (or divider "-")
        (> day-i 60)))
     (Personnummer. nil 0 0 "" false)))
 
-(defn luhn-sum [digits]
+(defn format
+  ([pnr] (format pnr true))
+  ([pnr b]
+   (let [x (if b "yMMdd" "yyMMdd")]
+     (clojure.core/format "%s%s%03d%d"
+                          (t/format x (:date pnr))
+                          (:divider pnr)
+                          (:serial pnr)
+                          (:control pnr)))))
+
+(defn- luhn-sum [digits]
   (apply
    +
    (map read-string
@@ -40,17 +51,17 @@
                     (cycle [2 1])))
          #""))))
 
-(defn format-for-luhn [pnr]
-  (format "%s%03d"
-          (t/format "yyMMdd" (:date pnr))
-          (:serial pnr)))
+(defn- format-for-luhn [pnr]
+  (clojure.core/format "%s%03d"
+                       (t/format "yyMMdd" (:date pnr))
+                       (:serial pnr)))
 
-(defn luhn [digits]
+(defn- luhn [digits]
   (- 10
      (mod
       (luhn-sum digits) 10)))
 
-(defn luhn-string [string]
+(defn- luhn-string [string]
   (luhn (map read-string (split string #""))))
 
 (defmulti valid class)
