@@ -1,0 +1,4 @@
+name: "Clojure"
+maintainer: "@bombsimon"
+spec: 3.0
+workflow: "clojure.yml"
