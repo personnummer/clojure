@@ -1,6 +1,6 @@
 (defproject personnummer/personnummer "0.1.0"
   :description "Validate Swedish personal identity numbers"
-  :dependencies [[org.clojure/clojure "1.10.3"]
+  :dependencies [[org.clojure/clojure "1.12.6"]
                  [clojure.java-time "0.3.3"]]
   :url "https://github.com/bombsimon/clojure-personnummer"
   :license {:name "MIT"
